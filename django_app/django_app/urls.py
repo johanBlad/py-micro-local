@@ -15,8 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import HttpResponse
 
 urlpatterns = [
-    path('message/', include('message.urls')),
-    path('admin/', admin.site.urls),
+    path('dj/', lambda *args: HttpResponse('Django root index!\n')),
+    path('dj/message/', include('message.urls')),
+    path('dj/admin/', admin.site.urls),
 ]
