@@ -1,7 +1,14 @@
 import socket
 import sys
 
-from http_utils import parse_http, make_http_response
+from http_utils import parse_http, make_http_response, make_wsgi_env
+
+
+def application(environ, start_response):
+    path = environ["PATH_INFO"]
+    response = f"Hello custom webserver from {path}"
+    start_response("200 OK", [("Content-Length", len(response)),])
+    return response
 
 
 class WebServer(object):
@@ -35,6 +42,11 @@ class WebServer(object):
             # threading.Thread(target=self._handle_client, args=(client, address)).start()
 
     def handle_client(self, conn, addr):
+        def start_response(status, headers):
+            conn.sendall(f"HTTP/1.1 {status}\r\n".encode())
+            for (key, value) in headers:
+                conn.sendall(f"{key}: {value}\r\n".encode())
+            conn.sendall("\r\n".encode())
 
         while True:
             try:
@@ -43,9 +55,13 @@ class WebServer(object):
                     break
 
                 parsed_req = parse_http(http_req)
-                res = "Hello from custom webserver\n"
+                environ = make_wsgi_env(*parsed_req)
+                print("call application")
+                res = application(environ, start_response)
+
                 http_res = make_http_response(res)
-                conn.sendall(http_res.encode("utf-8"))
+                print(http_res)
+                conn.sendall(http_res.encode())
                 conn.shutdown(socket.SHUT_RDWR)
                 conn.close()
                 break
@@ -53,32 +69,15 @@ class WebServer(object):
                 print("ERROR: ", e)
                 break
 
+    # def start_response(self, conn, status, headers):
+    #     conn.sendall(f"HTTP/1.1 {status}\r\n")
+    #     for (key, value) in headers:
+    #         conn.sendall(f"{key}: {value}\r\n")
+    #     conn.sendall("\r\n ")
+
     def shutdown(self, s):
         try:
             print("Shutting down server")
             s.shutdown(socket.SHUT_RDWR)
         except Exception:
             pass
-
-
-# /*
-# with socket.socket() as s:
-#     print('binding!')
-#     s.bind(('localhost', 8020))
-#     s.listen(1)
-#     conn, addr = s.accept()
-#     print('pre loop')
-#     while True:
-
-#         print('conn', conn)
-#         with conn:
-#             try:
-#                 http_req = conn.recv(1024).decode('utf-8')
-#                 parsed_req = parse_http(http_req)
-#                 res = 'Hello from custom webserver\n'
-#                 http_res = make_http_response(res)
-#                 conn.sendall(http_res.encode('utf-8'))
-#             except OSError as err:
-#                 print('catch!')
-#                 print(err)
-
