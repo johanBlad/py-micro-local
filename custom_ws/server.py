@@ -1,20 +1,14 @@
 import socket
 import sys
 
-from http_utils import parse_http, make_http_response, make_wsgi_env
-
-
-def application(environ, start_response):
-    path = environ["PATH_INFO"]
-    response = f"Hello custom webserver from {path}"
-    start_response("200 OK", [("Content-Length", len(response)),])
-    return response
+from http_utils import parse_http, make_wsgi_env
 
 
 class WebServer(object):
-    def __init__(self, hostname, port):
+    def __init__(self, hostname, port, app):
         self.port = port
         self.host = hostname
+        self.application = app
 
     def start(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -56,12 +50,10 @@ class WebServer(object):
 
                 parsed_req = parse_http(http_req)
                 environ = make_wsgi_env(*parsed_req)
-                print("call application")
-                res = application(environ, start_response)
-
-                http_res = make_http_response(res)
-                print(http_res)
-                conn.sendall(http_res.encode())
+                response_body = self.application(environ, start_response)
+                for data in response_body:
+                    conn.sendall(data.encode())
+                conn.sendall("\r\n\r\n".encode())
                 conn.shutdown(socket.SHUT_RDWR)
                 conn.close()
                 break
