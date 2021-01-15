@@ -6,6 +6,6 @@ ADD . /app
 
 RUN pip install -r requirements.txt
 
-EXPOSE 8003
+EXPOSE 8001
 
-CMD ["uwsgi", "app.ini"]
+CMD ["gunicorn", "-w", "3", "--bind", "0.0.0.0:8001", "wsgi:application"]

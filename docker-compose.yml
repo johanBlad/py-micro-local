@@ -2,6 +2,15 @@ version: "3.7"
 
 services: 
 
+  cws:
+    build: ./custom_ws
+    container_name: cws
+    restart: always
+    environment: 
+      - APP_NAME=CustomWebServer
+    expose: 
+      - 8001
+
   flask:
     build: ./flask
     container_name: flask
@@ -9,7 +18,7 @@ services:
     environment: 
       - APP_NAME=MyFlaskApp
     expose: 
-      - 8080
+      - 8002
   
   django:
     build: ./django_app
@@ -18,7 +27,7 @@ services:
     environment: 
       - APP_NAME=DjangoApp
     expose: 
-      - 8010
+      - 8003
 
   nginx:
     build: ./nginx

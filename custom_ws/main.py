@@ -12,6 +12,6 @@ def shutdownServer(sig, unused):
 
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, shutdownServer)
-    server = WebServer("localhost", 8010, application)
+    server = WebServer("localhost", 8001, application)
     server.start()
 
