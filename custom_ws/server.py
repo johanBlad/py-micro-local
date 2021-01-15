@@ -53,19 +53,12 @@ class WebServer(object):
                 response_body = self.application(environ, start_response)
                 for data in response_body:
                     conn.sendall(data.encode())
-                conn.sendall("\r\n\r\n".encode())
                 conn.shutdown(socket.SHUT_RDWR)
                 conn.close()
                 break
             except Exception as e:
                 print("ERROR: ", e)
                 break
-
-    # def start_response(self, conn, status, headers):
-    #     conn.sendall(f"HTTP/1.1 {status}\r\n")
-    #     for (key, value) in headers:
-    #         conn.sendall(f"{key}: {value}\r\n")
-    #     conn.sendall("\r\n ")
 
     def shutdown(self, s):
         try:

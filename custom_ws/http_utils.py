@@ -8,16 +8,10 @@ def parse_http(http):
     return method, path, protocol, headers, body
 
 
-def make_http_response(res):
-    return (
-        "HTTP/1.1 200 OK \r\n"
-        + f"Content-Length: {len(res)}\r\n"
-        + "Content-Type: text/html"
-        + "\r\n"
-        + "\r\n"
-        + res
-        + "\r\n"
-    )
+def encode_response(response, response_type):
+    if response_type == "text/html":
+        response = bytes(response + "\r\n", "utf-8")
+    return response
 
 
 def make_wsgi_env(method, path, protocol, headers, body):
